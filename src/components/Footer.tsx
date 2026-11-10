@@ -2,9 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { FOOTER_LINKS, SITE } from "@/lib/site";
 import { Icon, type IconName } from "./Icon";
+import { publicContactEmails } from "@/lib/server/email-settings";
 import { BackToTop } from "./BackToTop";
 
-export function Footer() {
+export async function Footer() {
+  const contacts = await publicContactEmails();
   return (
     <footer className="dark-section relative mt-0 border-t border-line-dark">
       <div className="mx-auto max-w-[1400px] px-5 pt-16 pb-20 sm:px-10">
@@ -71,6 +73,10 @@ export function Footer() {
                   </span>
                 </a>
               </li>
+              {contacts.map(contact => <li key={contact.email}>
+                <span className="block text-xs text-on-dark-soft">{contact.label}</span>
+                <a href={`mailto:${contact.email}`} className="break-all transition-colors hover:text-on-dark">{contact.email}</a>
+              </li>)}
             </ul>
           </div>
         </div>

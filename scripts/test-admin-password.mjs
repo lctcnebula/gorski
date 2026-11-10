@@ -35,6 +35,8 @@ const route=load('src/app/api/admin/[...action]/route.ts',{
   '@/lib/server/db':database,
   '@/lib/server/security':{...security,rateLimit:async()=>true},
   '@/lib/server/push':{},
+  '@/lib/server/email-settings':{},
+  '@/lib/email-settings':load('src/lib/email-settings.ts',{}),
   '@/lib/admin-filters':load('src/lib/admin-filters.ts',{}),
 });
 function change(body){return route.POST(new Request('http://localhost:3000/api/admin/change-password',{

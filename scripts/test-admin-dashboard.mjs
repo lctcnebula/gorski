@@ -39,6 +39,7 @@ try {
   assert.equal(second.items.length, 2);
   assert.equal(new Set([...first.items,...second.items].map(item=>item.id)).size, 52);
   const filtered = await (await request('/api/admin/submissions?' + range + '&kind=event&status=reviewed')).json();
+  assert.equal(filtered.formCounts.reduce((sum, row) => sum + row.count, 0), 26);
   assert.equal(filtered.total, 26); assert.ok(filtered.items.every(item=>item.kind==='event' && item.status==='reviewed'));
   const empty = await (await request('/api/admin/submissions?from=2100-01-01T00%3A00%3A00Z&to=2100-01-02T00%3A00%3A00Z')).json();
   assert.equal(empty.total, 0, 'End boundary must be exclusive');

@@ -3,6 +3,8 @@ import { randomUUID } from "node:crypto";
 import { database } from "@/lib/server/db";
 import { authenticated, currentPasswordHash, hashPassword, decrypt, encrypt, fingerprint, passwordMatches, rateLimit, sameOrigin, session } from "@/lib/server/security";
 import { deliverPending, pushSchema } from "@/lib/server/push";
+import { emailSettingsSchema } from "@/lib/email-settings";
+import { readEmailSettings } from "@/lib/server/email-settings";
 import { submissionFilters } from "@/lib/admin-filters";
 import type { SubmissionPayload } from "@/lib/submission-schema";
 
@@ -15,6 +17,7 @@ export async function GET(request: Request, context: { params: Promise<{ action:
     const { action } = await context.params;
     if (action[0] === "settings") return json({ email: process.env.ADMIN_EMAIL, vapidPublicKey: process.env.VAPID_PUBLIC_KEY });
     const sql = database();
+    if (action[0] === "contact-emails") return json(await readEmailSettings());
     if (action[0] === "submission") {
       const id = z.string().uuid().parse(new URL(request.url).searchParams.get("id"));
       const rows = await sql`SELECT id,kind,payload,status,created_at FROM submissions WHERE id=${id}`;
@@ -36,8 +39,13 @@ export async function GET(request: Request, context: { params: Promise<{ action:
       AND (${from}::timestamptz IS NULL OR created_at>=${from}::timestamptz)
       AND (${to}::timestamptz IS NULL OR created_at<${to}::timestamptz)
       GROUP BY status,kind`;
+    const formCounts = await sql`SELECT kind,COUNT(*)::int AS count FROM submissions
+      WHERE (${status}='all' OR status=${status})
+      AND (${from}::timestamptz IS NULL OR created_at>=${from}::timestamptz)
+      AND (${to}::timestamptz IS NULL OR created_at<${to}::timestamptz)
+      GROUP BY kind`;
     const total = counts.reduce((sum, row) => sum + Number(row.count), 0);
-    return json({ items: rows.map(row => ({ ...decrypt<SubmissionPayload>(row.payload), id: row.id, kind: row.kind, status: row.status, createdAt: row.created_at })), counts, total, page });
+    return json({ items: rows.map(row => ({ ...decrypt<SubmissionPayload>(row.payload), id: row.id, kind: row.kind, status: row.status, createdAt: row.created_at })), counts, formCounts, total, page });
   } catch (error) { return error instanceof z.ZodError ? json({ error: "Invalid submission filters." }, 400) : json({ error: "The dashboard is temporarily unavailable." }, 503); }
 }
 
@@ -60,6 +68,12 @@ export async function POST(request: Request, context: { params: Promise<{ action
     if (!await authenticated()) return json({ error: "Sign in required." }, 401);
     if (action[0] === "logout") { (await session()).destroy(); return json({ ok: true }); }
     const sql = database();
+    if (action[0] === "contact-emails") {
+      const settings = emailSettingsSchema.parse(body);
+      await sql`INSERT INTO admin_settings(key,value) VALUES ('email_settings',${JSON.stringify(settings)})
+        ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value,updated_at=NOW()`;
+      return json({ ok: true, ...settings });
+    }
     if (action[0] === "change-password") {
       if (!await rateLimit(request, "password", 5, 900)) return json({ error: "Too many attempts. Try again in 15 minutes." }, 429);
       const input = z.object({ currentPassword: z.string().min(1).max(256), newPassword: z.string().min(12).max(256) }).parse(body);

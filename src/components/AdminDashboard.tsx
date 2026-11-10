@@ -2,8 +2,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { adminApi as api, adminInput, submissionLabels, statusLabels, type AdminSubmission as Item } from "@/lib/admin-client";
+import { adminApi as api, adminInput, formCatalog, submissionLabels, statusLabels, type AdminSubmission as Item } from "@/lib/admin-client";
 import { dateBounds } from "@/lib/admin-filters";
+import { AdminContactEmails } from "./AdminContactEmails";
+import { AdminEmailTemplates } from "./AdminEmailTemplates";
 import { AdminPassword } from "./AdminPassword";
 import { AdminSubmissionDetail } from "./AdminSubmissionDetail";
 
@@ -19,8 +21,9 @@ export function AdminDashboard({ initialSelectedId }: { initialSelectedId?: stri
   const details=useRef<HTMLDivElement>(null);
   const requestController=useRef<AbortController|null>(null);
   const [installPrompt,setInstallPrompt]=useState<InstallPrompt|null>(null);
-  const [view,setView]=useState<'dashboard'|'submissions'|'password'>('dashboard');
+  const [view,setView]=useState<'dashboard'|'submissions'|'password'|'emails'|'templates'>('dashboard');
   const [items,setItems]=useState<Item[]>([]),[counts,setCounts]=useState<Count[]>([]),[total,setTotal]=useState(0);
+  const [formCounts,setFormCounts]=useState<{kind:string;count:number}[]>([]);
   const [selected,setSelected]=useState<Item|null>(null),[statusBusy,setStatusBusy]=useState(false);
   const [page,setPage]=useState(1),[kind,setKind]=useState('all'),[filterStatus,setFilterStatus]=useState('all');
   const [dates,setDates]=useState({from:'',to:''}),[dateDraft,setDateDraft]=useState({from:'',to:''}),[range,setRange]=useState('all');
@@ -37,7 +40,7 @@ export function AdminDashboard({ initialSelectedId }: { initialSelectedId?: stri
       if(bounds.from)query.set('from',bounds.from);if(bounds.to)query.set('to',bounds.to);
       const data=await api(`submissions?${query}`,undefined,controller.signal);
       if(controller.signal.aborted)return;
-      setItems(data.items);setCounts(data.counts);setTotal(data.total);setError('');
+      setItems(data.items);setCounts(data.counts);setFormCounts(data.formCounts || []);setTotal(data.total);setError('');
     }catch(e){
       if(controller.signal.aborted)return;
       setError(e instanceof Error?e.message:'Could not load requests.');
@@ -49,7 +52,7 @@ export function AdminDashboard({ initialSelectedId }: { initialSelectedId?: stri
     if(!initialSelectedId)return;
     const controller=new AbortController();
     void api(`submission?id=${encodeURIComponent(initialSelectedId)}`,undefined,controller.signal).then(data=>{
-      if(!controller.signal.aborted){setSelected(data.item);setView('submissions');}
+      if(!controller.signal.aborted){setSelected(data.item);setKind(data.item.kind);setView('submissions');}
     }).catch(e=>{if(!controller.signal.aborted)setError(e instanceof Error?e.message:'Could not open submission.');});
     return()=>controller.abort();
   },[initialSelectedId]);
@@ -126,15 +129,18 @@ export function AdminDashboard({ initialSelectedId }: { initialSelectedId?: stri
   function select(item:Item){setSelected(item);requestAnimationFrame(()=>{details.current?.scrollIntoView({block:'nearest'});});}
   const sum=(predicate:(row:Count)=>boolean)=>counts.filter(predicate).reduce((value,row)=>value+row.count,0);
   const visible=view==='dashboard'?items.slice(0,8):items;
-  const tabs=[['dashboard','Dashboard'],['submissions','All submissions'],['password','Change password']] as const;
+  const tabs=[['dashboard','Dashboard'],['submissions','All submissions'],['templates','Email templates'],['emails','Contact emails'],['password','Change password']] as const;
+  function openInbox(formKind:string){setKind(formKind);setView('submissions');setPage(1);setSelected(null);}
+  const activeForm=formCatalog.find(form=>form.kind===kind);
   return <main id="main" className="mx-auto max-w-[1500px] px-4 py-6 sm:px-8 sm:py-8">
     <header className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-5">
       <div><Link href="/" className="text-sm font-semibold text-brand">Gorski Chiropractic</Link><h1 className="display mt-2 text-3xl sm:text-4xl">Office dashboard</h1></div>
       <div className="flex flex-wrap gap-2"><Link href="/" className="btn btn-outline">Back to website</Link><button className="btn btn-outline" onClick={async()=>{try{await api('logout',{});router.replace('/admin/login');router.refresh();}catch{setError('Could not sign out. Please try again.');}}}>Sign out</button></div>
     </header>
-    <nav aria-label="Dashboard" className="mt-5 flex flex-wrap gap-2">{tabs.map(([key,label])=><button key={key} onClick={()=>{setView(key);setPage(1);}} aria-current={view===key?'page':undefined} className={`min-h-11 rounded-lg px-4 py-2 text-sm font-medium ${view===key?'bg-ink text-white':'border border-line bg-white text-ink-soft'}`}>{label}</button>)}</nav>
+    <nav aria-label="Dashboard" className="mt-5 flex flex-wrap gap-2">{tabs.map(([key,label])=><button key={key} onClick={()=>{setView(key);setPage(1);if(key==='dashboard'||key==='submissions'){setKind('all');setSelected(null);}}} aria-current={view===key?'page':undefined} className={`min-h-11 rounded-lg px-4 py-2 text-sm font-medium ${view===key?'bg-ink text-white':'border border-line bg-white text-ink-soft'}`}>{label}</button>)}</nav>
     {error&&<p role="alert" className="mt-5 rounded-lg bg-brand-soft p-4 text-sm">{error}</p>}
-    {view==='password'?<AdminPassword/>:<>
+    <nav aria-label="Form inboxes" className="mt-3 flex flex-wrap gap-2">{formCatalog.map(form=><button key={form.kind} onClick={()=>openInbox(form.kind)} aria-current={view==='submissions'&&kind===form.kind?'page':undefined} className={`min-h-11 rounded-lg border px-4 py-2 text-sm font-medium ${view==='submissions'&&kind===form.kind?'border-brand bg-brand-soft text-brand':'border-line bg-white text-ink-soft'}`}>{form.title}</button>)}</nav>
+    {view==='password'?<AdminPassword/>:view==='emails'?<AdminContactEmails/>:view==='templates'?<AdminEmailTemplates/>:<>
       <section className="mt-6 rounded-xl border border-line bg-white p-4 sm:p-5" aria-label="Submission filters">
         <div className="flex flex-wrap gap-2">{[['all','All time'],['today','Today'],['7','Last 7 days'],['30','Last 30 days']].map(([value,label])=><button key={value} onClick={()=>preset(value)} aria-pressed={range===value} className={`min-h-11 rounded-full border px-4 text-sm ${range===value?'border-brand bg-brand-soft font-semibold text-brand':'border-line text-ink-soft'}`}>{label}</button>)}</div>
         <form className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]" onSubmit={event=>{event.preventDefault();if(dateDraft.from&&dateDraft.to&&dateDraft.from>dateDraft.to){setError('Choose an end date on or after the start date.');return;}setDates(dateDraft);setRange('custom');setPage(1);}}>
@@ -145,12 +151,13 @@ export function AdminDashboard({ initialSelectedId }: { initialSelectedId?: stri
           <button type="submit" className="btn btn-outline self-end">Apply dates</button>
         </form>
       </section>
+      {view==='dashboard'&&<section className="mt-5 grid gap-4 md:grid-cols-3" aria-label="Forms overview">{formCatalog.map(form=><article key={form.kind} className="rounded-xl border border-line bg-white p-5"><div className="flex items-start justify-between gap-3"><h2 className="font-semibold">{form.title}</h2><span className="display text-3xl text-brand">{loading?'…':formCounts.find(row=>row.kind===form.kind)?.count || 0}</span></div><p className="mt-2 text-sm text-ink-soft">{form.description}</p><button className="btn btn-outline mt-4" onClick={()=>openInbox(form.kind)}>{form.action}</button><Link href={form.href} className="mt-3 block text-sm text-brand underline">Open website form</Link></article>)}</section>}
       <section className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-7" aria-label="Submission totals" aria-busy={loading}>
         {[['Total requests',total],['New',sum(row=>row.status==='new')],['Reviewed',sum(row=>row.status==='reviewed')],['Completed',sum(row=>row.status==='completed')],['Appointments',sum(row=>row.kind==='appointments')],['Assessments',sum(row=>row.kind==='assessment')],['Events',sum(row=>row.kind==='event')]].map(([label,count])=><div key={label} className="rounded-xl border border-line bg-white p-4"><div className="display text-3xl tabular-nums text-brand">{loading?'…':count}</div><h2 className="mt-2 text-xs font-medium text-ink-soft">{label}</h2></div>)}
       </section>
       <p className="mt-2 text-xs text-ink-soft">Totals reflect the selected date, type, and status filters.</p>
       <section className="mt-7" aria-label="Submissions">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-semibold">{view==='dashboard'?'Recent submissions':'All submissions'}</h2><p className="mt-1 text-sm text-ink-soft">{loading?'Loading requests…':`${total} matching ${total===1?'request':'requests'}`}</p></div><div className="flex gap-2">{view==='dashboard'&&<button className="btn btn-outline" onClick={()=>{setView('submissions');setPage(1);}}>View all</button>}<button className="btn btn-outline" disabled={loading} onClick={()=>void refresh()}>Refresh</button></div></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-semibold">{view==='dashboard'?'Recent submissions':activeForm?activeForm.title+' inbox':'All submissions'}</h2><p className="mt-1 text-sm text-ink-soft">{activeForm&&view==='submissions'?activeForm.description+' ':''}{loading?'Loading requests…':`${total} matching ${total===1?'request':'requests'}`}</p></div><div className="flex gap-2">{view==='dashboard'&&<button className="btn btn-outline" onClick={()=>{setView('submissions');setPage(1);}}>View all</button>}<button className="btn btn-outline" disabled={loading} onClick={()=>void refresh()}>Refresh</button></div></div>
         <div className={`mt-4 grid items-start gap-5 ${selected?'xl:grid-cols-[minmax(0,1.4fr)_minmax(340px,1fr)]':''}`}>
           <div className="min-w-0 rounded-xl border border-line bg-white" aria-busy={loading}>
             {loading?<p className="p-8 text-center text-sm text-ink-soft">Loading submissions…</p>:!visible.length?<div className="p-10 text-center"><h3 className="text-lg font-semibold">No submissions in this view</h3><p className="mt-2 text-sm text-ink-soft">Try another date range, type, or status.</p></div>:<>

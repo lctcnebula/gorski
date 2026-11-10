@@ -4,6 +4,7 @@ import { Icon } from "@/components/Icon";
 import { Reveal, Stagger, StaggerItem } from "@/components/Motion";
 import { CONTAINER, PageHero } from "@/components/Sections";
 import { CONTACT } from "@/lib/content";
+import { publicContactEmails } from "@/lib/server/email-settings";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -12,7 +13,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contact-us" },
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const contacts = await publicContactEmails();
   return (
     <>
       <PageHero
@@ -68,6 +70,13 @@ export default function ContactPage() {
               ))}
             </ul>
           </StaggerItem>
+          {contacts.length > 0 && <StaggerItem className="card p-8 lg:col-span-3">
+            <h2 className="display text-2xl text-ink">Email our office</h2>
+            <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{contacts.map(contact => <div key={contact.email}>
+              <h3 className="text-sm font-semibold text-ink">{contact.label}</h3>
+              <a href={`mailto:${contact.email}`} className="mt-2 block break-all text-brand underline">{contact.email}</a>
+            </div>)}</div>
+          </StaggerItem>}
         </Stagger>
       </section>
       <section className={`${CONTAINER} pb-24 sm:pb-32`}>
