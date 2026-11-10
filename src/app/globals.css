@@ -1,0 +1,404 @@
+@import "tailwindcss";
+
+/* Warm, calm palette built from the Gorski mark: brick #944A46 on charcoal #231F20, set on linen paper. */
+:root {
+  --paper: #faf6f0;
+  --paper-2: #f2ebe2;
+  --surface: #ffffff;
+  --ink: #231f20;
+  --ink-soft: #4a4345;
+  --muted: #86797a;
+  --line: rgb(35 31 32 / 0.1);
+  --line-strong: rgb(35 31 32 / 0.2);
+  --brand: #944a46;
+  --brand-deep: #6e3330;
+  --brand-soft: #f3e3df;
+  --sage: #5e7d6b;
+  --sage-soft: #e6eee8;
+  --gold: #c9a35c;
+  --on-dark: #f7f1ea;
+  --on-dark-soft: rgb(247 241 234 / 0.68);
+  --line-dark: rgb(247 241 234 / 0.12);
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-soft: var(--brand-soft);
+  --color-sage: var(--sage);
+  --color-sage-soft: var(--sage-soft);
+  --color-gold: var(--gold);
+  --color-on-dark: var(--on-dark);
+  --color-on-dark-soft: var(--on-dark-soft);
+  --color-line-dark: var(--line-dark);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+/* Main reading copy, without enlarging navigation and utility controls. */
+#main .prose-g,
+#main > section p:not(.eyebrow):not(.text-sm):not(.text-xs),
+#main > section .text-lg {
+  font-size: 1.5rem;
+  line-height: 1.65;
+}
+#main .native-form p.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+::selection {
+  background: var(--brand);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+/* Component classes live in the components layer so Tailwind utilities can override them. */
+@layer components {
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--brand);
+  }
+  .eyebrow-dark {
+    color: var(--on-dark-soft);
+  }
+
+  .display {
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.06;
+    font-variation-settings: "opsz" 72;
+    text-wrap: balance;
+  }
+  .display em,
+  .display .accent {
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 0.75rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    border-radius: 0.375rem;
+    padding: 0.8rem 1.25rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition:
+      background-color 0.25s,
+      color 0.25s,
+      border-color 0.25s,
+      box-shadow 0.25s,
+      transform 0.2s;
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn-primary {
+    background: var(--brand);
+    color: #fff;
+  }
+  .btn-primary:hover {
+    background: var(--brand-deep);
+  }
+  .btn-outline {
+    border: 1px solid var(--line-strong);
+    color: var(--ink);
+    background: transparent;
+  }
+  .btn-outline:hover {
+    border-color: var(--brand);
+    color: var(--brand);
+  }
+  .btn-light {
+    background: var(--on-dark);
+    color: var(--ink);
+  }
+  .btn-light:hover {
+    background: #fff;
+  }
+  .btn-ghost-dark {
+    border: 1px solid var(--line-dark);
+    color: var(--on-dark);
+  }
+  .btn-ghost-dark:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .btn-lg {
+    padding: 0.95rem 1.5rem;
+    font-size: 1rem;
+  }
+  .btn-arrow {
+    display: inline-flex;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn:hover .btn-arrow {
+    transform: translate(2px, -2px);
+  }
+
+  .link-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: var(--brand);
+    text-decoration: underline;
+    text-decoration-color: rgb(148 74 70 / 0.3);
+    text-underline-offset: 4px;
+  }
+  .link-arrow:hover {
+    text-decoration-color: currentColor;
+  }
+  .link-arrow svg {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .link-arrow:hover svg {
+    transform: translateX(4px);
+  }
+
+  .frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    background: var(--paper-2);
+  }
+  .frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+html.lenis {
+  scroll-behavior: auto;
+}
+
+/* Flat surfaces. The warmth comes from the paper tone, not from gradients. */
+.linen {
+  background: var(--paper-2);
+}
+.dark-section {
+  background: var(--ink);
+  color: var(--on-dark);
+}
+.dark-wash {
+  background: var(--ink);
+}
+
+/* Hairline rules used to structure lists and fact rows. */
+.rule {
+  border-top: 1px solid var(--line);
+}
+.dark-section .rule {
+  border-color: var(--line-dark);
+}
+
+.scroll-cue {
+  animation: scroll-cue 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes scroll-cue {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(250%);
+  }
+}
+
+.marquee {
+  animation: marquee 50s linear infinite;
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Long-form copy: legal pages and blog posts. */
+.prose-g {
+  color: var(--ink-soft);
+  font-size: 1.0625rem;
+  line-height: 1.8;
+}
+.prose-g > :first-child {
+  margin-top: 0;
+}
+.prose-g h2 {
+  margin-top: 2.75rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.75rem;
+  line-height: 1.15;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.prose-g h3 {
+  margin-top: 2rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.35rem;
+  line-height: 1.25;
+  font-weight: 500;
+  color: var(--ink);
+}
+.prose-g h4 {
+  margin-top: 1.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.prose-g p {
+  margin-top: 1.4rem;
+}
+.prose-g p.lead,
+.prose-g .callout {
+  margin-top: 1.25rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.35rem;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.prose-g .callout {
+  border-left: 2px solid var(--brand);
+  padding-left: 1.25rem;
+}
+.prose-g strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+.prose-g em {
+  font-style: italic;
+  color: var(--ink);
+}
+.prose-g ul,
+.prose-g ol {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.5rem;
+}
+.prose-g li {
+  position: relative;
+  padding-left: 1.5rem;
+  line-height: 1.7;
+}
+.prose-g ul > li::before {
+  content: "";
+  position: absolute;
+  left: 0.2rem;
+  top: 0.72em;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--brand);
+}
+.prose-g a {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-g a:hover {
+  color: var(--brand-deep);
+}
+.prose-g hr {
+  margin: 2rem 0;
+  border: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line-strong), transparent);
+}
+.prose-g figure {
+  margin: 2.25rem 0;
+}
+.prose-g figure img {
+  width: auto;
+  max-width: 100%;
+  max-height: 75svh;
+  border-radius: 0.5rem;
+  border: 1px solid var(--line);
+}
+.prose-g figure.medium {
+  max-width: 28rem;
+}
+.prose-g figure.small {
+  max-width: 18rem;
+}
+.prose-g .lines {
+  margin-top: 1rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.25rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+/* Third-party embeds */
+.jotform-frame {
+  width: 100%;
+  min-height: 720px;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .marquee,
+  .scroll-cue {
+    animation: none;
+  }
+}

@@ -1,0 +1,8 @@
+.next
+node_modules
+.claude
+tsconfig.tsbuildinfo
+media-originals
+
+.env*
+.vercel
