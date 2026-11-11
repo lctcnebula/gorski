@@ -12,7 +12,9 @@ export async function Footer() {
       <div className="mx-auto max-w-[1400px] px-5 pt-16 pb-20 sm:px-10">
         <div className="grid gap-14 lg:grid-cols-[1.2fr_0.8fr_1fr]">
           <div>
-            <Image src="/images/logo-footer.png" alt={SITE.name} width={225} height={123} className="h-16 w-auto" />
+            <Link href="/" aria-label={`${SITE.name} home`} className="inline-block">
+              <Image src="/images/logo-footer.png" alt={SITE.name} width={225} height={123} className="h-24 w-auto" />
+            </Link>
 
             <h3 className="mt-8 text-xs font-medium tracking-[0.06em] text-on-dark-soft uppercase">About Us</h3>
             <p className="mt-8 max-w-md text-[0.975rem] leading-relaxed text-on-dark-soft">{SITE.about}</p>
@@ -57,15 +59,15 @@ export async function Footer() {
               />
             </div>
             <h3 className="mt-8 text-xs font-medium tracking-[0.06em] text-on-dark-soft uppercase">Contact</h3>
-            <ul className="mt-4 grid gap-2.5 text-[0.975rem] text-on-dark-soft">
+            <ul className="mt-4 grid gap-4 text-[1.5rem] leading-snug text-on-dark-soft">
               <li>
                 <a href={SITE.phoneHref} className="inline-flex items-center gap-2 transition-colors hover:text-on-dark">
-                  <Icon name="phone" className="size-4 text-on-dark-soft" /> {SITE.phone}
+                  <Icon name="phone" className="size-5 text-on-dark-soft" /> {SITE.phone}
                 </a>
               </li>
               <li>
                 <a href={SITE.mapsUrl} target="_blank" rel="noreferrer" className="inline-flex items-start gap-2 transition-colors hover:text-on-dark">
-                  <Icon name="pin" className="mt-1 size-4 shrink-0 text-on-dark-soft" />
+                  <Icon name="pin" className="mt-1.5 size-5 shrink-0 text-on-dark-soft" />
                   <span>
                     {SITE.address.street}
                     <br />
@@ -74,14 +76,14 @@ export async function Footer() {
                 </a>
               </li>
               {contacts.map(contact => <li key={contact.email}>
-                <span className="block text-xs text-on-dark-soft">{contact.label}</span>
+                <span className="block text-sm text-on-dark-soft">{contact.label}</span>
                 <a href={`mailto:${contact.email}`} className="break-all transition-colors hover:text-on-dark">{contact.email}</a>
               </li>)}
             </ul>
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-3 border-t border-line-dark pt-6 text-sm text-on-dark-soft sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 flex flex-col gap-3 border-t border-line-dark pt-6 text-base text-on-dark-soft sm:flex-row sm:items-center sm:justify-between">
           <p>
             © Copyright{" "}
             <Link href="/" className="text-on-dark transition-colors hover:text-on-dark">

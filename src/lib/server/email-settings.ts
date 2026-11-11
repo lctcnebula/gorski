@@ -3,6 +3,7 @@ import { cache } from "react";
 import { connection } from "next/server";
 import { database } from "./db";
 import { emailSettingsSchema, emptyEmailSettings } from "../email-settings";
+import { mergeTemplates, parseTemplateOverrides, type TemplateOverrides } from "../email-templates";
 
 export async function readEmailSettings() {
   const sql = database();
@@ -15,3 +16,9 @@ export const publicContactEmails = cache(async () => {
   try { return (await readEmailSettings()).contacts; }
   catch { console.error("Public contact emails are temporarily unavailable."); return []; }
 });
+
+export async function readTemplateOverrides(): Promise<TemplateOverrides> {
+  const rows = await database()`SELECT value FROM admin_settings WHERE key='email_templates'`;
+  return rows[0] ? parseTemplateOverrides(JSON.parse(rows[0].value)) : {};
+}
+export async function readEmailTemplates() { return mergeTemplates(await readTemplateOverrides()); }

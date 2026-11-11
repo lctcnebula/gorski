@@ -55,7 +55,7 @@ try {
   assert.equal((await request('/api/admin/change-password', {currentPassword:password,newPassword:'short'})).status, 400);
   assert.equal((await request('/api/admin/change-password', {}, 'https://untrusted.invalid')).status, 403);
   const html = await (await request('/admin')).text();
-  assert.ok(html.includes('Back to website')); assert.ok(html.includes('Recent submissions'));
+  assert.ok(html.includes('Logout')); assert.ok(html.includes('Recent submissions'));
   assert.equal((await request('/api/admin/logout', {})).status, 200);
   cookie=''; assert.equal((await request('/api/admin/submissions')).status, 401);
   console.log('PASS: authentication, date boundaries, type/status filters, full totals, pagination, deep links, status changes, password validation, CSRF, dashboard render, and logout.');

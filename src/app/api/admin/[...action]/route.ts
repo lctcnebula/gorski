@@ -4,7 +4,8 @@ import { database } from "@/lib/server/db";
 import { authenticated, currentPasswordHash, hashPassword, decrypt, encrypt, fingerprint, passwordMatches, rateLimit, sameOrigin, session } from "@/lib/server/security";
 import { deliverPending, pushSchema } from "@/lib/server/push";
 import { emailSettingsSchema } from "@/lib/email-settings";
-import { readEmailSettings } from "@/lib/server/email-settings";
+import { readEmailSettings, readEmailTemplates, readTemplateOverrides } from "@/lib/server/email-settings";
+import { emailTemplates, templateEditSchema } from "@/lib/email-templates";
 import { submissionFilters } from "@/lib/admin-filters";
 import type { SubmissionPayload } from "@/lib/submission-schema";
 
@@ -18,6 +19,7 @@ export async function GET(request: Request, context: { params: Promise<{ action:
     if (action[0] === "settings") return json({ email: process.env.ADMIN_EMAIL, vapidPublicKey: process.env.VAPID_PUBLIC_KEY });
     const sql = database();
     if (action[0] === "contact-emails") return json(await readEmailSettings());
+    if (action[0] === "email-templates") return json({ templates: await readEmailTemplates(), defaults: emailTemplates });
     if (action[0] === "submission") {
       const id = z.string().uuid().parse(new URL(request.url).searchParams.get("id"));
       const rows = await sql`SELECT id,kind,payload,status,created_at FROM submissions WHERE id=${id}`;
@@ -73,6 +75,19 @@ export async function POST(request: Request, context: { params: Promise<{ action
       await sql`INSERT INTO admin_settings(key,value) VALUES ('email_settings',${JSON.stringify(settings)})
         ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value,updated_at=NOW()`;
       return json({ ok: true, ...settings });
+    }
+    if (action[0] === "email-templates") {
+      const input = templateEditSchema.parse(body);
+      const overrides = await readTemplateOverrides();
+      const fallback = emailTemplates[input.kind][input.type];
+      const kindOverrides = { ...overrides[input.kind] };
+      // Saving the default text removes the override so later default updates still apply.
+      if (input.subject === fallback.subject && input.body === fallback.body) delete kindOverrides[input.type];
+      else kindOverrides[input.type] = { subject: input.subject, body: input.body };
+      const next = { ...overrides, [input.kind]: kindOverrides };
+      await sql`INSERT INTO admin_settings(key,value) VALUES ('email_templates',${JSON.stringify(next)})
+        ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value,updated_at=NOW()`;
+      return json({ ok: true, templates: await readEmailTemplates() });
     }
     if (action[0] === "change-password") {
       if (!await rateLimit(request, "password", 5, 900)) return json({ error: "Too many attempts. Try again in 15 minutes." }, 429);

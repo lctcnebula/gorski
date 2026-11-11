@@ -156,10 +156,10 @@ export default function HomePage() {
                 {HOME.contact.cta} <Icon name="arrowRight" className="size-4" />
               </Link>
             </Reveal>
-            <dl className="mt-10 grid gap-3 text-sm sm:grid-cols-2">
+            <dl className="mt-10 grid gap-6 sm:grid-cols-2">
               <div>
-                <dt className="text-muted">Address</dt>
-                <dd className="mt-1 text-ink">
+                <dt className="text-base text-muted">Address</dt>
+                <dd className="mt-1 text-[1.5rem] leading-snug text-ink">
                   <a href={SITE.mapsUrl} target="_blank" rel="noreferrer" className="transition-colors hover:text-brand">
                     {SITE.address.street}
                     <br />
@@ -168,8 +168,8 @@ export default function HomePage() {
                 </dd>
               </div>
               <div>
-                <dt className="text-muted">Phone</dt>
-                <dd className="mt-1 text-ink">
+                <dt className="text-base text-muted">Phone</dt>
+                <dd className="mt-1 text-[1.5rem] leading-snug text-ink">
                   <a href={SITE.phoneHref} className="transition-colors hover:text-brand">
                     {SITE.phone}
                   </a>

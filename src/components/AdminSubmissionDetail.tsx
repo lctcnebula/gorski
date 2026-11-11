@@ -2,15 +2,19 @@
 import { useEffect, useState } from "react";
 import { assessmentQuestions } from "@/lib/assessment";
 import { adminApi, adminInput, submissionLabels, type AdminSubmission } from "@/lib/admin-client";
-import { renderEmailTemplate } from "@/lib/email-templates";
+import { emailTemplates, renderTemplate, type EmailTemplates } from "@/lib/email-templates";
 import { Icon } from "./Icon";
 
 export function AdminSubmissionDetail({ item, onClose, onStatus, busy }: { item: AdminSubmission; onClose: () => void; onStatus: (status: string) => void; busy: boolean }) {
   const [contactEmail, setContactEmail] = useState("");
+  const [templates, setTemplates] = useState<EmailTemplates>(emailTemplates);
   useEffect(() => {
     const controller = new AbortController();
     void adminApi("contact-emails", undefined, controller.signal).then(data => {
       if (!controller.signal.aborted) setContactEmail(data.contacts[0]?.email || "");
+    }).catch(() => {});
+    void adminApi("email-templates", undefined, controller.signal).then(data => {
+      if (!controller.signal.aborted) setTemplates(data.templates);
     }).catch(() => {});
     return () => controller.abort();
   }, []);
@@ -18,7 +22,7 @@ export function AdminSubmissionDetail({ item, onClose, onStatus, busy }: { item:
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   function draft(confirmation: boolean) {
-    const email = renderEmailTemplate(item.kind, confirmation ? "confirmation" : "reply", item.name, undefined, contactEmail);
+    const email = renderTemplate(templates[item.kind][confirmation ? "confirmation" : "reply"], { name: item.name, email: item.email, submissionDate: new Date(item.createdAt).toLocaleDateString("en-US", { dateStyle: "long" }), contactEmail });
     setSubject(email.subject);
     setBody(email.text);
     setCompose(true);

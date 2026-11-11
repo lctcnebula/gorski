@@ -129,17 +129,20 @@ export function AdminDashboard({ initialSelectedId }: { initialSelectedId?: stri
   function select(item:Item){setSelected(item);requestAnimationFrame(()=>{details.current?.scrollIntoView({block:'nearest'});});}
   const sum=(predicate:(row:Count)=>boolean)=>counts.filter(predicate).reduce((value,row)=>value+row.count,0);
   const visible=view==='dashboard'?items.slice(0,8):items;
-  const tabs=[['dashboard','Dashboard'],['submissions','All submissions'],['templates','Email templates'],['emails','Contact emails'],['password','Change password']] as const;
+  const tabs=[['dashboard','Dashboard'],['submissions','Submissions'],['templates','Email Templates'],['emails','Contact Emails'],['password','Change Password']] as const;
   function openInbox(formKind:string){setKind(formKind);setView('submissions');setPage(1);setSelected(null);}
   const activeForm=formCatalog.find(form=>form.kind===kind);
   return <main id="main" className="mx-auto max-w-[1500px] px-4 py-6 sm:px-8 sm:py-8">
-    <header className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-5">
-      <div><Link href="/" className="text-sm font-semibold text-brand">Gorski Chiropractic</Link><h1 className="display mt-2 text-3xl sm:text-4xl">Office dashboard</h1></div>
-      <div className="flex flex-wrap gap-2"><Link href="/" className="btn btn-outline">Back to website</Link><button className="btn btn-outline" onClick={async()=>{try{await api('logout',{});router.replace('/admin/login');router.refresh();}catch{setError('Could not sign out. Please try again.');}}}>Sign out</button></div>
+    <header className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3 border-b border-line pb-4">
+      <Link href="/" className="text-sm font-semibold text-ink">Gorski Chiropractic</Link>
+      <nav aria-label="Dashboard" className="-mx-3 flex flex-wrap items-center">
+        {tabs.map(([key,label])=><button key={key} onClick={()=>{setView(key);setPage(1);if(key==='dashboard'||key==='submissions'){setKind('all');setSelected(null);}}} aria-current={view===key?'page':undefined} className={`min-h-11 px-3 text-sm font-medium transition-colors ${view===key?'text-brand':'text-ink-soft hover:text-ink'}`}>{label}</button>)}
+        <Link href="/" className="flex min-h-11 items-center px-3 text-sm font-medium text-ink-soft hover:text-ink">Website</Link>
+        <button className="min-h-11 px-3 text-sm font-medium text-ink-soft hover:text-ink" onClick={async()=>{try{await api('logout',{});router.replace('/admin/login');router.refresh();}catch{setError('Could not sign out. Please try again.');}}}>Logout</button>
+      </nav>
     </header>
-    <nav aria-label="Dashboard" className="mt-5 flex flex-wrap gap-2">{tabs.map(([key,label])=><button key={key} onClick={()=>{setView(key);setPage(1);if(key==='dashboard'||key==='submissions'){setKind('all');setSelected(null);}}} aria-current={view===key?'page':undefined} className={`min-h-11 rounded-lg px-4 py-2 text-sm font-medium ${view===key?'bg-ink text-white':'border border-line bg-white text-ink-soft'}`}>{label}</button>)}</nav>
     {error&&<p role="alert" className="mt-5 rounded-lg bg-brand-soft p-4 text-sm">{error}</p>}
-    <nav aria-label="Form inboxes" className="mt-3 flex flex-wrap gap-2">{formCatalog.map(form=><button key={form.kind} onClick={()=>openInbox(form.kind)} aria-current={view==='submissions'&&kind===form.kind?'page':undefined} className={`min-h-11 rounded-lg border px-4 py-2 text-sm font-medium ${view==='submissions'&&kind===form.kind?'border-brand bg-brand-soft text-brand':'border-line bg-white text-ink-soft'}`}>{form.title}</button>)}</nav>
+    {view==='submissions'&&<nav aria-label="Form inboxes" className="mt-5 flex flex-wrap gap-x-5 border-b border-line text-sm">{[{kind:'all',title:'All forms'},...formCatalog].map(form=><button key={form.kind} onClick={()=>openInbox(form.kind)} aria-current={kind===form.kind?'page':undefined} className={`-mb-px min-h-11 border-b-2 font-medium ${kind===form.kind?'border-brand text-brand':'border-transparent text-ink-soft hover:text-ink'}`}>{form.title}</button>)}</nav>}
     {view==='password'?<AdminPassword/>:view==='emails'?<AdminContactEmails/>:view==='templates'?<AdminEmailTemplates/>:<>
       <section className="mt-6 rounded-xl border border-line bg-white p-4 sm:p-5" aria-label="Submission filters">
         <div className="flex flex-wrap gap-2">{[['all','All time'],['today','Today'],['7','Last 7 days'],['30','Last 30 days']].map(([value,label])=><button key={value} onClick={()=>preset(value)} aria-pressed={range===value} className={`min-h-11 rounded-full border px-4 text-sm ${range===value?'border-brand bg-brand-soft font-semibold text-brand':'border-line text-ink-soft'}`}>{label}</button>)}</div>
