@@ -46,7 +46,7 @@ const footer=load('src/components/Footer.tsx',{'next/image':image,'next/link':Li
 const html=renderToStaticMarkup(await footer.Footer());
 for (const contact of saved.contacts) assert.ok(html.includes(`mailto:${contact.email}`));
 const wrappers={Stagger:({children})=>React.createElement('div',{},children),StaggerItem:({children})=>React.createElement('div',{},children),Reveal:({children})=>React.createElement('div',{},children)};
-const contactPage=load('src/app/(site)/contact-us/page.tsx', {'next/link':Link,'@/components/Icon':{Icon:()=>null},'@/components/Motion':wrappers,'@/components/Sections':{CONTAINER:'',PageHero:()=>null},'@/lib/content':{CONTACT:{}},'@/lib/site':site,'@/lib/server/email-settings':serverSettings});
+const contactPage=load('src/app/(site)/contact-us/page.tsx', {'next/link':Link,'@/components/Icon':{Icon:()=>null},'@/components/NativeForm':{NativeForm:()=>null},'@/components/Motion':wrappers,'@/components/Sections':{CONTAINER:'',PageHero:()=>null},'@/lib/content':{CONTACT:{}},'@/lib/site':site,'@/lib/server/email-settings':serverSettings});
 const contactHtml=renderToStaticMarkup(await contactPage.default());
 for (const contact of saved.contacts) assert.ok(contactHtml.includes(`mailto:${contact.email}`));
 assert.equal((await save({contacts:[]})).status,200);
