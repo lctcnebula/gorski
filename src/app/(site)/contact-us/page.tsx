@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
+import { NativeForm } from "@/components/NativeForm";
 import { Reveal, Stagger, StaggerItem } from "@/components/Motion";
 import { CONTAINER, PageHero } from "@/components/Sections";
 import { CONTACT } from "@/lib/content";
@@ -78,6 +79,11 @@ export default async function ContactPage() {
             </div>)}</div>
           </StaggerItem>}
         </Stagger>
+      </section>
+      <section id="book" className={`${CONTAINER} scroll-mt-28 pb-14 sm:pb-20`}>
+        <Reveal className="mx-auto max-w-3xl">
+          <NativeForm form="appointments" />
+        </Reveal>
       </section>
       <section className={`${CONTAINER} pb-24 sm:pb-32`}>
         <Reveal className="overflow-hidden rounded-xl border border-line">

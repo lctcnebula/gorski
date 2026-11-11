@@ -13,6 +13,8 @@ export const submissionSchema = z.object({
   message: z.string().trim().max(3000).default(""),
   answers: z.record(z.string(), z.string().max(500)).default({}),
   consent: z.literal(true),
+  smsMarketing: z.boolean().default(false),
+  smsUpdates: z.boolean().default(false),
   website: z.string().max(200).default(""),
 }).superRefine((value, context) => {
   if (value.kind === "assessment") {
