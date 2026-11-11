@@ -7,20 +7,16 @@ import { Icon } from "@/components/Icon";
 import { JsonLd } from "@/components/JsonLd";
 import { Reveal } from "@/components/Motion";
 import { CONTAINER, CtaBand, PageHero, ReadingAside } from "@/components/Sections";
-import { POSTS, getPost } from "@/lib/posts";
+import { publishedPost, publishedPosts } from "@/lib/server/blog";
 import { SITE } from "@/lib/site";
 
 // Blog posts keep their WordPress URLs, which sit at the site root (/<slug>).
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return POSTS.map((p) => ({ slug: p.slug }));
-}
+// Posts are managed from the dashboard, so they are read on each request.
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = getPost((await params).slug);
+  const post = await publishedPost((await params).slug);
   if (!post) return {};
   return {
     title: post.seoTitle,
@@ -32,7 +28,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PostPage({ params }: Props) {
   const { slug } = await params;
-  const post = getPost(slug);
+  const POSTS = await publishedPosts();
+  const post = POSTS.find((p) => p.slug === slug);
   if (!post) notFound();
   const index = POSTS.findIndex((p) => p.slug === slug);
   const newer = POSTS[index - 1];
@@ -53,7 +50,7 @@ export default async function PostPage({ params }: Props) {
           author: { "@type": "Person", name: post.author },
           publisher: { "@id": `${SITE.url}/#org` },
           mainEntityOfPage: url,
-          image: `${SITE.url}${post.cover}`,
+          image: post.cover.startsWith("/") ? `${SITE.url}${post.cover}` : post.cover,
         }}
       />
       <PageHero

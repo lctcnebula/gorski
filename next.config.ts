@@ -10,6 +10,8 @@ const legacy = [
 ];
 
 const nextConfig: NextConfig = {
+  // Blog banner and inline images uploaded from the dashboard live in Vercel Blob.
+  images: { remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com", pathname: "/blog/**" }] },
   async headers() {
     const headers = [
       { key: "Cache-Control", value: "private, no-store, max-age=0" },

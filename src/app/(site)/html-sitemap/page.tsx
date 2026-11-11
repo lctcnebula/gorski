@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Reveal } from "@/components/Motion";
 import { CONTAINER, PageHero } from "@/components/Sections";
-import { POSTS } from "@/lib/posts";
+import { publishedPosts } from "@/lib/server/blog";
 import { PAGES } from "@/lib/site";
 
 export const metadata: Metadata = { title: "HTML Sitemap", alternates: { canonical: "/html-sitemap" } };
 
-export default function HtmlSitemapPage() {
+export default async function HtmlSitemapPage() {
+  const POSTS = await publishedPosts();
   return (
     <>
       <PageHero eyebrow="Sitemap" title="HTML Sitemap" crumbs={[{ label: "HTML Sitemap" }]} />

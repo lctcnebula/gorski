@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { adminApi as api, adminInput, formCatalog, submissionLabels, statusLabels, type AdminSubmission as Item } from "@/lib/admin-client";
 import { dateBounds } from "@/lib/admin-filters";
+import { AdminBlog } from "./AdminBlog";
 import { AdminContactEmails } from "./AdminContactEmails";
 import { AdminEmailTemplates } from "./AdminEmailTemplates";
 import { AdminPassword } from "./AdminPassword";
@@ -21,7 +22,7 @@ export function AdminDashboard({ initialSelectedId }: { initialSelectedId?: stri
   const details=useRef<HTMLDivElement>(null);
   const requestController=useRef<AbortController|null>(null);
   const [installPrompt,setInstallPrompt]=useState<InstallPrompt|null>(null);
-  const [view,setView]=useState<'dashboard'|'submissions'|'password'|'emails'|'templates'>('dashboard');
+  const [view,setView]=useState<'dashboard'|'submissions'|'blog'|'password'|'emails'|'templates'>('dashboard');
   const [items,setItems]=useState<Item[]>([]),[counts,setCounts]=useState<Count[]>([]),[total,setTotal]=useState(0);
   const [formCounts,setFormCounts]=useState<{kind:string;count:number}[]>([]);
   const [selected,setSelected]=useState<Item|null>(null),[statusBusy,setStatusBusy]=useState(false);
@@ -129,7 +130,7 @@ export function AdminDashboard({ initialSelectedId }: { initialSelectedId?: stri
   function select(item:Item){setSelected(item);requestAnimationFrame(()=>{details.current?.scrollIntoView({block:'nearest'});});}
   const sum=(predicate:(row:Count)=>boolean)=>counts.filter(predicate).reduce((value,row)=>value+row.count,0);
   const visible=view==='dashboard'?items.slice(0,8):items;
-  const tabs=[['dashboard','Dashboard'],['submissions','Submissions'],['templates','Email Templates'],['emails','Contact Emails'],['password','Change Password']] as const;
+  const tabs=[['dashboard','Dashboard'],['submissions','Submissions'],['blog','Blog'],['templates','Email Templates'],['emails','Contact Emails'],['password','Change Password']] as const;
   function openInbox(formKind:string){setKind(formKind);setView('submissions');setPage(1);setSelected(null);}
   const activeForm=formCatalog.find(form=>form.kind===kind);
   return <main id="main" className="mx-auto max-w-[1500px] px-4 py-6 sm:px-8 sm:py-8">
@@ -143,7 +144,7 @@ export function AdminDashboard({ initialSelectedId }: { initialSelectedId?: stri
     </header>
     {error&&<p role="alert" className="mt-5 rounded-lg bg-brand-soft p-4 text-sm">{error}</p>}
     {view==='submissions'&&<nav aria-label="Form inboxes" className="mt-5 flex flex-wrap gap-x-5 border-b border-line text-sm">{[{kind:'all',title:'All forms'},...formCatalog].map(form=><button key={form.kind} onClick={()=>openInbox(form.kind)} aria-current={kind===form.kind?'page':undefined} className={`-mb-px min-h-11 border-b-2 font-medium ${kind===form.kind?'border-brand text-brand':'border-transparent text-ink-soft hover:text-ink'}`}>{form.title}</button>)}</nav>}
-    {view==='password'?<AdminPassword/>:view==='emails'?<AdminContactEmails/>:view==='templates'?<AdminEmailTemplates/>:<>
+    {view==='blog'?<AdminBlog/>:view==='password'?<AdminPassword/>:view==='emails'?<AdminContactEmails/>:view==='templates'?<AdminEmailTemplates/>:<>
       <section className="mt-6 rounded-xl border border-line bg-white p-4 sm:p-5" aria-label="Submission filters">
         <div className="flex flex-wrap gap-2">{[['all','All time'],['today','Today'],['7','Last 7 days'],['30','Last 30 days']].map(([value,label])=><button key={value} onClick={()=>preset(value)} aria-pressed={range===value} className={`min-h-11 rounded-full border px-4 text-sm ${range===value?'border-brand bg-brand-soft font-semibold text-brand':'border-line text-ink-soft'}`}>{label}</button>)}</div>
         <form className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]" onSubmit={event=>{event.preventDefault();if(dateDraft.from&&dateDraft.to&&dateDraft.from>dateDraft.to){setError('Choose an end date on or after the start date.');return;}setDates(dateDraft);setRange('custom');setPage(1);}}>
