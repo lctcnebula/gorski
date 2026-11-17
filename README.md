@@ -43,3 +43,5 @@ All on the same URLs as the WordPress site.
 - The hero video (`public/video/hero.mp4`) is 24 MB as served by the old site; consider re-encoding it for faster loads.
 
 Stack: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, motion, Lenis.
+
+# valor
