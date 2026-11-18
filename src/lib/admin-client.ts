@@ -2,6 +2,8 @@ import type { SubmissionPayload } from "./submission-schema";
 
 export type AdminSubmission = SubmissionPayload & { createdAt: string; status: string };
 export const submissionLabels = { appointments: "Appointment", assessment: "Migraine assessment", event: "Event registration" };
+/** Contact-page messages are stored as appointments; the source tells the office which form they came from. */
+export const submissionLabel = (item: { kind: keyof typeof submissionLabels; source?: string }) => item.source === "contact" ? "Contact message" : submissionLabels[item.kind];
 export const formCatalog = [
   { kind: "appointments", title: "Appointments", description: "Appointment requests and preferred dates.", href: "/appointments", action: "View appointment requests" },
   { kind: "assessment", title: "Migraine assessments", description: "Completed assessments and questionnaire answers.", href: "/migraine-severity-assessment-tool", action: "View assessments" },
