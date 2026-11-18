@@ -20,6 +20,11 @@ export const emailTemplates: EmailTemplates = {
     reply: { title: "Event registration follow-up", subject: "About your event registration", body: "Hi {{name}},\n\nThank you for your interest in our event or workshop.\n\n{{message}}\n\nPlease reply to this email or call {{phone}} if you need help." },
   },
 };
+/** Default drafts for messages sent from the contact page. Not stored per form, so they are not editable. */
+export const contactTemplates: Record<TemplateKind, EmailTemplate> = {
+  confirmation: { title: "Message received", subject: "We received your message", body: "Hi {{name}},\n\nThank you for contacting Gorski Chiropractic. Our office has received your message and will get back to you soon.\n\nIf you need to reach us sooner, please call {{phone}}." },
+  reply: { title: "Reply to your message", subject: "Thank you for contacting us", body: "Hi {{name}},\n\nThank you for reaching out to Gorski Chiropractic.\n\n{{message}}\n\nPlease reply to this email or call {{phone}} if you have any questions." },
+};
 export const templateEditSchema = z.object({
   kind: z.enum(formKinds), type: z.enum(templateKinds),
   subject: z.string().trim().min(1, "Subject is required.").max(200),
