@@ -3,6 +3,7 @@ import { assessmentQuestions } from "./assessment";
 export const submissionSchema = z.object({
   id: z.string().uuid(),
   kind: z.enum(["appointments", "assessment", "event"]),
+  source: z.enum(["appointments", "contact"]).default("appointments"),
   name: z.string().trim().min(2).max(150),
   email: z.string().trim().email().max(254),
   phone: z.string().trim().regex(/^[+()\d .-]{7,40}$/),
@@ -17,6 +18,7 @@ export const submissionSchema = z.object({
   smsUpdates: z.boolean().default(false),
   website: z.string().max(200).default(""),
 }).superRefine((value, context) => {
+  if (value.source === "contact" && !value.message.trim()) context.addIssue({ code: "custom", path: ["message"], message: "Please tell us how we can help." });
   if (value.kind === "assessment") {
     for (const field of ["address", "occupation", "hobbies"] as const) {
       if (!value[field].trim()) context.addIssue({ code: "custom", path: [field], message: "This field is required." });
