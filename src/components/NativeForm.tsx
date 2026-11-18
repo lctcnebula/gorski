@@ -14,7 +14,7 @@ const steps = [
   { title: "Daily life", questions: [23, 24, 25, 26, 27, 28, 29] },
 ];
 
-export function NativeForm({ form }: { form: "appointments" | "assessment" | "event" }) {
+export function NativeForm({ form }: { form: "appointments" | "assessment" | "event" | "contact" }) {
   const router=useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -51,7 +51,7 @@ export function NativeForm({ form }: { form: "appointments" | "assessment" | "ev
     const payload = Object.fromEntries(data.entries());
     try {
       const response = await fetch("/api/submissions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
-        ...payload, id: requestId.current, kind: form, consent: data.get("consent") === "on", smsMarketing: data.get("smsMarketing") === "on", smsUpdates: data.get("smsUpdates") === "on",
+        ...payload, id: requestId.current, kind: form === "contact" ? "appointments" : form, source: form === "contact" ? "contact" : "appointments", consent: data.get("consent") === "on", smsMarketing: data.get("smsMarketing") === "on", smsUpdates: data.get("smsUpdates") === "on",
         answers: Object.fromEntries(assessmentQuestions.map(q => [q.id, data.get(q.id) || ""])),
       }) });
       const result = await response.json();
@@ -61,9 +61,9 @@ export function NativeForm({ form }: { form: "appointments" | "assessment" | "ev
     } catch (err) { setError(err instanceof Error ? err.message : "Please try again or call the office."); }
     finally { setBusy(false); }
   }
-  if (saved) return <div role="status" className="rounded-xl bg-sage-soft p-8 text-ink"><h2 className="display text-3xl">Thank you. We received your request.</h2><p className="mt-4">Our office will review your information and contact you. Your appointment is confirmed only when you hear from us.</p></div>;
+  if (saved) return <div role="status" className="rounded-xl bg-sage-soft p-8 text-ink"><h2 className="display text-3xl">{form === "contact" ? "Thank you. We received your message." : "Thank you. We received your request."}</h2><p className="mt-4">{form === "contact" ? "Our office will review your message and get back to you." : "Our office will review your information and contact you. Your appointment is confirmed only when you hear from us."}</p></div>;
   return <form ref={formRef} onSubmit={submit} noValidate={stepped} className="native-form scroll-mt-28 space-y-7 rounded-xl bg-white p-5 sm:p-8">
-    <h2 className="display text-3xl">{form === "appointments" ? "Request an appointment" : form === "assessment" ? "Migraine Severity Assessment" : "Register for an event"}</h2>
+    <h2 className="display text-3xl">{form === "contact" ? "Send us a message" : form === "appointments" ? "Request an appointment" : form === "assessment" ? "Migraine Severity Assessment" : "Register for an event"}</h2>
     {stepped && <div>
       <p className="text-base font-medium text-ink-soft">Step {step + 1} of {steps.length} · <span className="text-ink">{steps[step].title}</span></p>
       <ol className="mt-3 grid grid-cols-6 gap-1.5" aria-hidden>{steps.map((item, index) => <li key={item.title} className={`h-1.5 rounded-full ${index <= step ? "bg-brand" : "bg-line"}`} />)}</ol>
@@ -89,7 +89,7 @@ export function NativeForm({ form }: { form: "appointments" | "assessment" | "ev
       </fieldset>; })}
     </div>)}
     <div data-step={steps.length - 1} hidden={!last} className="space-y-7">
-    <label className="block text-lg font-medium">{form === "event" ? "Event or workshop you are interested in" : "Anything else you would like us to know?"}<textarea name="message" rows={4} maxLength={3000} className={inputClass} /></label>
+    <label className="block text-lg font-medium">{form === "event" ? "Event or workshop you are interested in" : form === "contact" ? <>How can we help? <span aria-hidden>*</span></> : "Anything else you would like us to know?"}<textarea name="message" rows={4} maxLength={3000} required={form === "contact"} className={inputClass} /></label>
     <div hidden aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
     <label className="flex items-start gap-3 text-base text-ink-soft"><input name="smsMarketing" type="checkbox" className="mt-1 size-5 shrink-0 accent-brand" /><span>I consent to receive marketing text messages about special offers, discounts, and service updates from {SITE.name} at the phone number provided. Message frequency varies. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.</span></label>
     <label className="flex items-start gap-3 text-base text-ink-soft"><input name="smsUpdates" type="checkbox" className="mt-1 size-5 shrink-0 accent-brand" /><span>I consent to receive non-marketing text messages from {SITE.name} about appointment scheduling, appointment reminders, and care-related updates. Message frequency varies. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.</span></label>
