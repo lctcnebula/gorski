@@ -51,7 +51,7 @@ export function NativeForm({ form }: { form: "appointments" | "assessment" | "ev
     const payload = Object.fromEntries(data.entries());
     try {
       const response = await fetch("/api/submissions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
-        ...payload, id: requestId.current, kind: form === "contact" ? "appointments" : form, source: form === "contact" ? "contact" : "appointments", consent: data.get("consent") === "on", smsMarketing: data.get("smsMarketing") === "on", smsUpdates: data.get("smsUpdates") === "on",
+        ...payload, id: requestId.current, kind: form, consent: data.get("consent") === "on", smsMarketing: data.get("smsMarketing") === "on", smsUpdates: data.get("smsUpdates") === "on",
         answers: Object.fromEntries(assessmentQuestions.map(q => [q.id, data.get(q.id) || ""])),
       }) });
       const result = await response.json();
