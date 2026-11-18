@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { assessmentQuestions } from "@/lib/assessment";
 import { adminApi, adminInput, submissionLabel, type AdminSubmission } from "@/lib/admin-client";
-import { contactTemplates, emailTemplates, renderTemplate, type EmailTemplates } from "@/lib/email-templates";
+import { emailTemplates, renderTemplate, type EmailTemplates } from "@/lib/email-templates";
 import { Icon } from "./Icon";
 
 export function AdminSubmissionDetail({ item, onClose, onStatus, busy }: { item: AdminSubmission; onClose: () => void; onStatus: (status: string) => void; busy: boolean }) {
@@ -22,7 +22,7 @@ export function AdminSubmissionDetail({ item, onClose, onStatus, busy }: { item:
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   function draft(confirmation: boolean) {
-    const email = renderTemplate((item.source === "contact" ? contactTemplates : templates[item.kind])[confirmation ? "confirmation" : "reply"], { name: item.name, email: item.email, submissionDate: new Date(item.createdAt).toLocaleDateString("en-US", { dateStyle: "long" }), contactEmail });
+    const email = renderTemplate(templates[item.kind][confirmation ? "confirmation" : "reply"], { name: item.name, email: item.email, submissionDate: new Date(item.createdAt).toLocaleDateString("en-US", { dateStyle: "long" }), contactEmail });
     setSubject(email.subject);
     setBody(email.text);
     setCompose(true);
