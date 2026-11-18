@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { assessmentQuestions } from "@/lib/assessment";
-import { adminApi, adminInput, submissionLabels, type AdminSubmission } from "@/lib/admin-client";
-import { emailTemplates, renderTemplate, type EmailTemplates } from "@/lib/email-templates";
+import { adminApi, adminInput, submissionLabel, type AdminSubmission } from "@/lib/admin-client";
+import { contactTemplates, emailTemplates, renderTemplate, type EmailTemplates } from "@/lib/email-templates";
 import { Icon } from "./Icon";
 
 export function AdminSubmissionDetail({ item, onClose, onStatus, busy }: { item: AdminSubmission; onClose: () => void; onStatus: (status: string) => void; busy: boolean }) {
@@ -22,13 +22,13 @@ export function AdminSubmissionDetail({ item, onClose, onStatus, busy }: { item:
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   function draft(confirmation: boolean) {
-    const email = renderTemplate(templates[item.kind][confirmation ? "confirmation" : "reply"], { name: item.name, email: item.email, submissionDate: new Date(item.createdAt).toLocaleDateString("en-US", { dateStyle: "long" }), contactEmail });
+    const email = renderTemplate((item.source === "contact" ? contactTemplates : templates[item.kind])[confirmation ? "confirmation" : "reply"], { name: item.name, email: item.email, submissionDate: new Date(item.createdAt).toLocaleDateString("en-US", { dateStyle: "long" }), contactEmail });
     setSubject(email.subject);
     setBody(email.text);
     setCompose(true);
   }
   return <aside className="min-w-0 rounded-xl border border-line bg-white p-5 sm:p-6" aria-labelledby="request-title">
-    <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-wide text-brand">{submissionLabels[item.kind]}</p><h2 id="request-title" className="display mt-2 break-words text-3xl">{item.name}</h2></div><button className="grid size-11 shrink-0 place-items-center rounded-lg border border-line" aria-label="Close submission" onClick={onClose}><Icon name="close" className="size-4" /></button></div>
+    <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-wide text-brand">{submissionLabel(item)}</p><h2 id="request-title" className="display mt-2 break-words text-3xl">{item.name}</h2></div><button className="grid size-11 shrink-0 place-items-center rounded-lg border border-line" aria-label="Close submission" onClick={onClose}><Icon name="close" className="size-4" /></button></div>
     <p className="mt-2 text-sm text-ink-soft">Received {new Date(item.createdAt).toLocaleString()}</p>
     <div className="mt-5 flex flex-col items-start gap-3"><a href={`mailto:${item.email}`} className="break-all text-sm text-brand underline">{item.email}</a><a href={`tel:${item.phone}`} className="text-sm text-brand underline">{item.phone}</a></div>
     <label className="mt-6 block text-sm font-medium">Request status<select disabled={busy} value={item.status} onChange={event => onStatus(event.target.value)} className={`${adminInput} mt-2`}><option value="new">New</option><option value="reviewed">Reviewed</option><option value="completed">Completed</option></select></label>
