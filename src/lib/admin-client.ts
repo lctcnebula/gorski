@@ -1,13 +1,13 @@
 import type { SubmissionPayload } from "./submission-schema";
 
 export type AdminSubmission = SubmissionPayload & { createdAt: string; status: string };
-export const submissionLabels = { appointments: "Appointment", assessment: "Migraine assessment", event: "Event registration" };
-/** Contact-page messages are stored as appointments; the source tells the office which form they came from. */
-export const submissionLabel = (item: { kind: keyof typeof submissionLabels; source?: string }) => item.source === "contact" ? "Contact message" : submissionLabels[item.kind];
+export const submissionLabels = { appointments: "Appointment", assessment: "Migraine assessment", event: "Event registration", contact: "Contact message" };
+export const submissionLabel = (item: { kind: keyof typeof submissionLabels }) => submissionLabels[item.kind];
 export const formCatalog = [
   { kind: "appointments", title: "Appointments", description: "Appointment requests and preferred dates.", href: "/appointments", action: "View appointment requests" },
   { kind: "assessment", title: "Migraine assessments", description: "Completed assessments and questionnaire answers.", href: "/migraine-severity-assessment-tool", action: "View assessments" },
   { kind: "event", title: "Event registrations", description: "Event and workshop registration enquiries.", href: "/register-for-event", action: "View registrations" },
+  { kind: "contact", title: "Contact messages", description: "Messages sent from the contact page.", href: "/contact-us", action: "View messages" },
 ] as const;
 export const statusLabels: Record<string, string> = { new: "New", reviewed: "Reviewed", completed: "Completed" };
 export async function adminApi(path: string, body?: unknown, signal?: AbortSignal) {
