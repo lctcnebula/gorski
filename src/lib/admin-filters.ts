@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const submissionFilters = z.object({
   page: z.coerce.number().int().min(1).max(10000).default(1),
-  kind: z.enum(["all", "appointments", "assessment", "event"]).default("all"),
+  kind: z.enum(["all", "appointments", "assessment", "event", "contact"]).default("all"),
   status: z.enum(["all", "new", "reviewed", "completed"]).default("all"),
   from: z.string().datetime({ offset: true }).optional(),
   to: z.string().datetime({ offset: true }).optional(),
