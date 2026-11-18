@@ -1,12 +1,14 @@
 CREATE TABLE IF NOT EXISTS submissions (
   id uuid PRIMARY KEY,
-  kind text NOT NULL CHECK (kind IN ('appointments','assessment','event')),
+  kind text NOT NULL CHECK (kind IN ('appointments','assessment','event','contact')),
   payload text NOT NULL,
   status text NOT NULL DEFAULT 'new' CHECK (status IN ('new','reviewed','completed')),
   created_at timestamptz NOT NULL DEFAULT NOW(),
   updated_at timestamptz NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS submissions_created ON submissions (created_at DESC);
+ALTER TABLE submissions DROP CONSTRAINT IF EXISTS submissions_kind_check;
+ALTER TABLE submissions ADD CONSTRAINT submissions_kind_check CHECK (kind IN ('appointments','assessment','event','contact'));
 CREATE TABLE IF NOT EXISTS rate_limits (key text PRIMARY KEY, count int NOT NULL, expires_at timestamptz NOT NULL);
 CREATE TABLE IF NOT EXISTS push_subscriptions (id text PRIMARY KEY, payload text NOT NULL, created_at timestamptz NOT NULL DEFAULT NOW());
 CREATE TABLE IF NOT EXISTS push_deliveries (
