@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const formKinds = ["appointments", "assessment", "event"] as const;
+export const formKinds = ["appointments", "assessment", "event", "contact"] as const;
 export type FormKind = typeof formKinds[number];
 const address = z.string().trim().email().max(254).transform(value => value.toLowerCase());
 export const emailSettingsSchema = z.object({
