@@ -82,7 +82,7 @@ export default async function ContactPage() {
       </section>
       <section id="book" className={`${CONTAINER} scroll-mt-28 pb-14 sm:pb-20`}>
         <Reveal className="mx-auto max-w-3xl">
-          <NativeForm form="appointments" />
+          <NativeForm form="contact" />
         </Reveal>
       </section>
       <section className={`${CONTAINER} pb-24 sm:pb-32`}>
